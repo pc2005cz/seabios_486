@@ -155,7 +155,7 @@ floppy_setup(void)
         return;
     dprintf(3, "init floppy drives\n");
 
-    if (CONFIG_QEMU) {
+    if (CONFIG_QEMU || 0) {        //TODO floppy disabled for now
         u8 type = rtc_read(CMOS_FLOPPY_DRIVE_TYPE);
         if (type & 0xf0)
             addFloppy(0, type >> 4);
