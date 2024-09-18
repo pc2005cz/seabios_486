@@ -207,14 +207,17 @@ static inline void smp_wmb(void) {
 }
 
 static inline void writel(void *addr, u32 val) {
+	*(volatile u32 *)addr;
     barrier();
     *(volatile u32 *)addr = val;
 }
 static inline void writew(void *addr, u16 val) {
+	*(volatile u16 *)addr;
     barrier();
     *(volatile u16 *)addr = val;
 }
 static inline void writeb(void *addr, u8 val) {
+	*(volatile u8 *)addr;
     barrier();
     *(volatile u8 *)addr = val;
 }
