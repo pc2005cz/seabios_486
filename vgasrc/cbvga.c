@@ -230,7 +230,7 @@ cbvga_setup(void)
 
     struct cb_header *cbh = find_cb_table();
     if (!cbh) {
-        dprintf(1, "Unable to find coreboot table\n");
+        dprintf(1, "CBVGA Unable to find coreboot table\n");
         return -1;
     }
     struct cb_framebuffer *cbfb = find_cb_subtable(cbh, CB_TAG_FRAMEBUFFER);
