@@ -59,6 +59,7 @@ ivt_init(void)
     SET_IVT(0x18, FUNC16(entry_18));
     SET_IVT(0x19, FUNC16(entry_19_official));
     SET_IVT(0x1a, FUNC16(entry_1a_official));
+    //TODO 0x1c for debug?
     SET_IVT(0x40, FUNC16(entry_40));
 
     // INT 60h-66h reserved for user interrupt
@@ -196,6 +197,27 @@ prepareboot(void)
 void VISIBLE32FLAT
 startBoot(void)
 {
+    dprintf(3, "++++startBoot++++ %x %x\n", BUILD_STACK_ADDR, BUILD_EBDA_MINIMUM);
+
+#if 0
+    dprintf(3, "dump int table\n");
+
+struct int_vec {
+	u16 ip;
+	u16 cs;
+};
+
+	volatile struct int_vec *vec = (struct int_vec *)0;
+
+	for (unsigned interrupt=0; interrupt<256; interrupt++) {
+		dprintf(1, "%02x %04x:%04x\n",
+			interrupt,
+			vec[interrupt].cs,
+			vec[interrupt].ip
+		);
+	}
+#endif
+
     // Clear low-memory allocations (required by PMM spec).
 //    memset((void*)BUILD_STACK_ADDR, 0, BUILD_EBDA_MINIMUM - BUILD_STACK_ADDR);
 
