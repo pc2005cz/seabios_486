@@ -34,6 +34,7 @@ handle_12(struct bregs *regs)
 {
     debug_enter(regs, DEBUG_HDL_12);
     regs->ax = GET_BDA(mem_size_kb);
+    dprintf(3, "mem_size_kb %u\n", regs->ax);
 }
 
 // INT 11h Equipment List Service Entry Point
