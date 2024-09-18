@@ -82,6 +82,8 @@ get_translation(struct drive_s *drive)
     if (host_lchs_supplied(drive))
         return TRANSLATION_HOST;
     u8 type = drive->type;
+
+    //TODO qemu?
     if (CONFIG_QEMU && type == DTYPE_ATA) {
         // Emulators pass in the translation info via nvram.
         u8 translation = rtc_read(CMOS_BIOS_DISKTRANSFLAG + drive->cntl_id/4);
@@ -103,7 +105,7 @@ get_translation(struct drive_s *drive)
     if (cylinders <= 1024 && heads <= 16 && spt <= 63)
         return TRANSLATION_NONE;
     if (cylinders * heads <= 131072)
-        return TRANSLATION_LARGE;
+        return TRANSLATION_LARGE;	//pc2005 original
     return TRANSLATION_LBA;
 }
 
