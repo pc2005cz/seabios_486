@@ -632,6 +632,8 @@ ahci_controller_setup(struct pci_device *pci)
     struct ahci_port_s *port;
     u32 val, pnr, max;
 
+dprintf(1, "AHCI found\n");
+
     if (create_bounce_buf() < 0)
         return;
 
@@ -679,8 +681,18 @@ ahci_scan(void)
     // Scan PCI bus for ATA adapters
     struct pci_device *pci;
     foreachpci(pci) {
-        if (pci->class != PCI_CLASS_STORAGE_SATA)
+dprintf(1, "PCI SATA check %x %x %x %x %x\n",
+        pci->bdf, pci->vendor, pci->device, pci->class, pci->prog_if
+);
+
+        if (
+                (pci->class != PCI_CLASS_STORAGE_SATA) &&
+                (pci->class != PCI_CLASS_STORAGE_RAID)        //pc2005
+        )
             continue;
+
+dprintf(1, "PCI SATA progif\n");
+
         if (pci->prog_if != 1 /* AHCI rev 1 */)
             continue;
         ahci_controller_setup(pci);
