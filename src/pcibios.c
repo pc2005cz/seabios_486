@@ -136,12 +136,16 @@ handle_1ab10d(struct bregs *regs)
 static void
 handle_1ab10e(struct bregs *regs)
 {
+    dprintf(1, "IRQ routing0\n");
     struct pir_header *pirtable_gf = GET_GLOBAL(PirAddr);
+    dprintf(1, "IRQ routing1 %p\n", pirtable_gf);
     if (! pirtable_gf) {
         set_code_invalid(regs, RET_FUNC_NOT_SUPPORTED);
         return;
     }
     struct pir_header *pirtable_g = GLOBALFLAT2GLOBAL(pirtable_gf);
+
+    dprintf(1, "IRQ routing2 %p\n", pirtable_g);
 
     struct param_s {
         u16 size;
@@ -153,6 +157,9 @@ handle_1ab10e(struct bregs *regs)
     u16 bufsize = GET_FARVAR(regs->es, param_far->size);
     u16 pirsize = GET_GLOBAL(pirtable_g->size) - sizeof(struct pir_header);
     SET_FARVAR(regs->es, param_far->size, pirsize);
+
+    dprintf(1, "IRQ routing3 %u < %u\n", bufsize, pirsize);
+
     if (bufsize < pirsize) {
         set_code_invalid(regs, RET_BUFFER_TOO_SMALL);
         return;
@@ -161,6 +168,8 @@ handle_1ab10e(struct bregs *regs)
     // Get dest buffer.
     void *buf_far = (void*)(GET_FARVAR(regs->es, param_far->buf_off)+0);
     u16 buf_seg = GET_FARVAR(regs->es, param_far->buf_seg);
+
+    dprintf(1, "IRQ routing4 %p\n", buf_far);
 
     // Memcpy pir table slots to dest buffer.
     memcpy_far(buf_seg, buf_far
