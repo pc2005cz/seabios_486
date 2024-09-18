@@ -117,7 +117,7 @@ static int ahci_command(struct ahci_port_s *port_gf, int iswrite, int isatapi,
     cmd->prdt[0].baseu = 0;
     cmd->prdt[0].flags = bsize-1;
 
-    flags = ((1 << 16) | /* one prd entry */
+    flags = (((buffer?1:0) << 16) | /* one prd entry */
              (iswrite ? (1 << 6) : 0) |
              (isatapi ? (1 << 5) : 0) |
              (5 << 0)); /* fis length (dwords) */
