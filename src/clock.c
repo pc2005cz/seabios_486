@@ -298,6 +298,17 @@ clock_update(void)
     sercon_check_event();
 }
 
+#if 0
+// default user timer Entry Point
+void VISIBLE16
+handle_1c(void)
+{
+//TODO debug
+//    debug_isr(DEBUG_ISR_1C);
+}
+#endif
+
+
 // INT 08h System Timer ISR Entry Point
 void VISIBLE16
 handle_08(void)
