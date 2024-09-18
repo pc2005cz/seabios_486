@@ -7,6 +7,9 @@
 extern struct zone_s ZoneLow, ZoneHigh, ZoneFSeg, ZoneTmpLow, ZoneTmpHigh;
 u32 rom_get_max(void);
 u32 rom_get_last(void);
+
+void rom_set_last(u32 newend);	//pc2005
+
 struct rom_header *rom_reserve(u32 size);
 int rom_confirm(u32 size);
 void malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm,

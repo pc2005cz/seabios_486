@@ -73,29 +73,41 @@ ivt_init(void)
 static void
 bda_init(void)
 {
-    dprintf(3, "init bda\n");
+    dprintf(3, "init bda %x\n", SEG_BDA);
 
     struct bios_data_area_s *bda = MAKE_FLATPTR(SEG_BDA, 0);
     memset(bda, 0, sizeof(*bda));
 
     int esize = EBDA_SIZE_START;
-    u16 ebda_seg = EBDA_SEGMENT_START;
-    if (!CONFIG_MALLOC_UPPERMEMORY)
+//    u16 ebda_seg = EBDA_SEGMENT_START;
+    u16 ebda_seg = 0xe000;	//pc2005 TODO
+
+    dprintf(3, "EBDA SEG %x %u\n", ebda_seg, esize);
+
+    if (!CONFIG_MALLOC_UPPERMEMORY) {
         ebda_seg = FLATPTR_TO_SEG(ALIGN_DOWN(SYMBOL(final_varlow_start), 1024)
                                   - EBDA_SIZE_START*1024);
+
+        dprintf(3, "EBDA SEG !UPPER %x\n", ebda_seg);
+    }
+
     SET_BDA(ebda_seg, ebda_seg);
 
-    SET_BDA(mem_size_kb, ebda_seg / (1024/16));
+//pc2005
+//    SET_BDA(mem_size_kb, ebda_seg / (1024/16));
+    SET_BDA(mem_size_kb, 0xa000 / (1024/16));
 
     // Init ebda
     struct extended_bios_data_area_s *ebda = get_ebda_ptr();
     memset(ebda, 0, sizeof(*ebda));
     ebda->size = esize;
 
-    e820_add((u32)ebda, BUILD_LOWRAM_END-(u32)ebda, E820_RESERVED);
+//    e820_add((u32)ebda, BUILD_LOWRAM_END-(u32)ebda, E820_RESERVED);
+    e820_add((u32)ebda, 0xf0000-(u32)ebda, E820_RESERVED);
 
     // Init extra stack
     StackPos = &ExtraStack[BUILD_EXTRA_STACK_SIZE] - SYMBOL(zonelow_base);
+    dprintf(1, "stackpos %p %p %x\n", StackPos, ExtraStack, SYMBOL(zonelow_base));
 }
 
 void
@@ -169,7 +181,9 @@ prepareboot(void)
     // Finalize data structures before boot
     cdrom_prepboot();
     pmm_prepboot();
+
     malloc_prepboot();
+
     e820_prepboot();
 
     HaveRunPost = 2;
@@ -183,7 +197,7 @@ void VISIBLE32FLAT
 startBoot(void)
 {
     // Clear low-memory allocations (required by PMM spec).
-    memset((void*)BUILD_STACK_ADDR, 0, BUILD_EBDA_MINIMUM - BUILD_STACK_ADDR);
+//    memset((void*)BUILD_STACK_ADDR, 0, BUILD_EBDA_MINIMUM - BUILD_STACK_ADDR);
 
     dprintf(3, "Jump to int19\n");
     struct bregs br;

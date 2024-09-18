@@ -15,6 +15,9 @@
 #include "std/optionrom.h" // OPTION_ROM_ALIGN
 #include "string.h" // memset
 
+const char *
+e820_type_name(u32 type);
+
 // Information on a reserved area.
 struct allocinfo_s {
     struct hlist_node node;
@@ -66,6 +69,9 @@ alloc_new(struct zone_s *zone, u32 size, u32 align, struct allocinfo_s *fill)
             return new_range_end;
         }
     }
+
+    dprintf(1, "AA4\n");
+
     return 0;
 }
 
@@ -208,9 +214,11 @@ zonelow_expand(u32 size, u32 align, struct allocinfo_s *fill)
         newpos = ALIGN_DOWN(ebda_end - size, align);
     u32 newbottom = ALIGN_DOWN(newpos, 1024);
     u32 newebda = ALIGN_DOWN(newbottom - ebda_size * 1024, 1024);
-    if (newebda < BUILD_EBDA_MINIMUM)
+    if (newebda < BUILD_EBDA_MINIMUM) {
         // Not enough space.
+    dprintf(1, "+++++++++++++++not enough space ebda %x\n", newebda);
         return 0;
+     }
 
     // Move ebda
     int ret = relocate_ebda(newebda, ebda_pos, ebda_size);
@@ -236,8 +244,10 @@ u32
 malloc_palloc(struct zone_s *zone, u32 size, u32 align)
 {
     ASSERT32FLAT();
-    if (!size)
+    if (!size) {
+    dprintf(1, "AA0\n");
         return 0;
+        }
 
     // Find and reserve space for main allocation
     struct allocdetail_s tempdetail;
@@ -245,17 +255,20 @@ malloc_palloc(struct zone_s *zone, u32 size, u32 align)
     u32 data = alloc_new(zone, size, align, &tempdetail.datainfo);
     if (!CONFIG_MALLOC_UPPERMEMORY && !data && zone == &ZoneLow)
         data = zonelow_expand(size, align, &tempdetail.datainfo);
-    if (!data)
+    if (!data) {
+    // dprintf(1, "AA1\n");
         return 0;
+        }
 
     // Find and reserve space for bookkeeping.
     struct allocdetail_s *detail = alloc_new_detail(&tempdetail);
     if (!detail) {
+    // dprintf(1, "AA2\n");
         alloc_free(&tempdetail.datainfo);
         return 0;
     }
 
-    dprintf(8, "phys_alloc zone=%p size=%d align=%x ret=%x (detail=%p)\n"
+    dprintf(1, "phys_alloc zone=%p size=%d align=%x ret=%x (detail=%p)\n"
             , zone, size, align, data, detail);
 
     return data;
@@ -376,6 +389,14 @@ rom_get_last(void)
     return RomEnd;
 }
 
+
+void
+rom_set_last(u32 newend)
+{
+    RomEnd = newend;
+}
+
+
 // Request space for an optionrom in 0xc0000-0xf0000 area.
 struct rom_header *
 rom_reserve(u32 size)
@@ -400,6 +421,14 @@ rom_confirm(u32 size)
         warn_noalloc();
         return -1;
     }
+
+    dprintf(1, "romend:%x size:%x ALIGN:%x RES:%x\n",
+	    RomEnd,
+	    size,
+	    OPTION_ROM_ALIGN,
+	    ALIGN(RomEnd + size, OPTION_ROM_ALIGN)
+    );
+
     RomEnd = ALIGN(RomEnd + size, OPTION_ROM_ALIGN);
     return 0;
 }
@@ -413,7 +442,7 @@ void
 malloc_preinit(void)
 {
     ASSERT32FLAT();
-    dprintf(3, "malloc preinit\n");
+    dprintf(1, "malloc preinit !!! does e820_remove on segA-segE\n");
 
     // Don't declare any memory between 0xa0000 and 0x100000
     e820_remove(BUILD_LOWRAM_END, BUILD_BIOS_ADDR-BUILD_LOWRAM_END);
@@ -427,6 +456,8 @@ malloc_preinit(void)
     int i;
     for (i=e820_count-1; i>=0; i--) {
         struct e820entry *en = &e820_list[i];
+        dprintf(1, "  start:%016llx size:%016llx type:%s\n", en->start, en->size, e820_type_name(en->type));
+
         u64 end = en->start + en->size;
         if (end < 1024*1024)
             break;
@@ -447,12 +478,21 @@ malloc_preinit(void)
         alloc_add(&ZoneTmpHigh, s, e);
     }
 
+    dprintf(1, "A3\n");
+
     // Populate regions
     alloc_add(&ZoneTmpLow, BUILD_STACK_ADDR, BUILD_EBDA_MINIMUM);
+    dprintf(1, "A4\n");
     if (highram_start) {
+
+    dprintf(1, "A5 start:%08x size:%08x\n", highram_start, highram_size);
+
         alloc_add(&ZoneHigh, highram_start, highram_start + highram_size);
+    dprintf(1, "A6\n");
         e820_add(highram_start, highram_size, E820_RESERVED);
+    dprintf(1, "A7\n");
     }
+    dprintf(1, "A8\n");
 }
 
 void
@@ -460,10 +500,10 @@ malloc_csm_preinit(u32 low_pmm, u32 low_pmm_size, u32 hi_pmm, u32 hi_pmm_size)
 {
     ASSERT32FLAT();
 
-    if (hi_pmm_size > BUILD_MAX_HIGHTABLE) {
+    if (hi_pmm_size > BUILD_MIN_HIGHTABLE) {
         u32 hi_pmm_end = hi_pmm + hi_pmm_size;
-        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm_end - BUILD_MAX_HIGHTABLE);
-        alloc_add(&ZoneHigh, hi_pmm_end - BUILD_MAX_HIGHTABLE, hi_pmm_end);
+        alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm_end - BUILD_MIN_HIGHTABLE);
+        alloc_add(&ZoneHigh, hi_pmm_end - BUILD_MIN_HIGHTABLE, hi_pmm_end);
     } else {
         alloc_add(&ZoneTmpHigh, hi_pmm, hi_pmm + hi_pmm_size);
     }
@@ -480,6 +520,9 @@ calcRamSize(void)
     int i;
     for (i=e820_count-1; i>=0; i--) {
         struct e820entry *en = &e820_list[i];
+
+	    dprintf(1, "  start:%016llx size:%016llx type:%s\n", en->start, en->size, e820_type_name(en->type));
+
         u64 end = en->start + en->size;
         u32 type = en->type;
         if (end <= 0xffffffff && (type == E820_ACPI || type == E820_RAM)) {
@@ -488,6 +531,8 @@ calcRamSize(void)
         }
     }
     LegacyRamSize = rs >= 1024*1024 ? rs : 1024*1024;
+
+//  LegacyRamSize -= 4* 64 * 1024;  //TODO delete pc2005
 }
 
 // Update pointers after code relocation.
@@ -534,7 +579,10 @@ malloc_prepboot(void)
     dprintf(3, "malloc finalize\n");
 
     u32 base = rom_get_max();
-    memset((void*)RomEnd, 0, base-RomEnd);
+    // memset((void*)RomEnd, 0, base-RomEnd);
+    //TEST pc2005
+
+
     if (CONFIG_MALLOC_UPPERMEMORY) {
         // Place an optionrom signature around used low mem area.
         struct rom_header *dummyrom = (void*)base;
@@ -545,7 +593,9 @@ malloc_prepboot(void)
 
     // Reserve more low-mem if needed.
     u32 endlow = GET_BDA(mem_size_kb)*1024;
-    e820_add(endlow, BUILD_LOWRAM_END-endlow, E820_RESERVED);
+//    e820_add(endlow, BUILD_LOWRAM_END-endlow, E820_RESERVED);	//pc2005
+
+	dprintf(1, "xyz %x %x\n", BUILD_LOWRAM_END, endlow);
 
     // Clear unused f-seg ram.
     struct allocinfo_s *info = alloc_find_lowest(&ZoneFSeg);
@@ -561,6 +611,30 @@ malloc_prepboot(void)
         e820_add(info->range_start, giveback, E820_RAM);
         dprintf(1, "Returned %d bytes of ZoneHigh\n", giveback);
     }
+
+#if 0
+//http://www.uruk.org/orig-grub/mem64mb.html
+
+//pc2005 reserve videobios?
+dprintf(1, "add vbios\n");
+e820_add(0xc0000, 0x10000, E820_RESERVED);
+
+dprintf(1, "add dseg\n");
+e820_add(0xd0000, 0x10000, E820_RESERVED);
+
+dprintf(1, "add vram\n");
+e820_add(0xa0000, 0x20000, E820_RESERVED);
+
+#endif
+
+#if 0
+dprintf(1, "add zero area\n");
+e820_add(0x0, 0x1000, E820_RESERVED);
+#endif
+
+
+dprintf(1, "add eseg\n");
+e820_add(0xe0000, 0x10000, E820_RESERVED);
 
     calcRamSize();
 }
