@@ -45,7 +45,7 @@ if [ $? -ne 0 ]; then
     echo "" >&2
     echo "Please update to a working version of binutils and retry." >&2
     echo -1
-    exit 0
+#    exit 0
 fi
 
 # Test for "-fwhole-program".  Older versions of gcc (pre v4.1) don't
