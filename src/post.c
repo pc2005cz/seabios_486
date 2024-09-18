@@ -227,6 +227,8 @@ maininit(void)
     // Prepare for boot.
     prepareboot();
 
+    cb_table_disable();
+
     // Write protect bios memory.
     make_bios_readonly();
 
