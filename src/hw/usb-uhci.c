@@ -134,7 +134,7 @@ uhci_waittick(u16 iobase)
 static void
 uhci_free_pipes(struct usb_uhci_s *cntl)
 {
-    dprintf(7, "uhci_free_pipes %p\n", cntl);
+    dprintf(1, "uhci_free_pipes %p\n", cntl);
 
     struct uhci_qh *pos = (void*)(cntl->framelist->links[0] & ~UHCI_PTR_BITS);
     for (;;) {
@@ -292,7 +292,7 @@ uhci_alloc_intr_pipe(struct usbdevice_s *usbdev
     struct usb_uhci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_uhci_s, usb);
     int frameexp = usb_get_period(usbdev, epdesc);
-    dprintf(7, "uhci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
+    dprintf(1, "uhci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
 
     if (frameexp > 10)
         frameexp = 10;
@@ -369,7 +369,7 @@ uhci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
         return uhci_alloc_intr_pipe(usbdev, epdesc);
     struct usb_uhci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_uhci_s, usb);
-    dprintf(7, "uhci_alloc_async_pipe %p %d\n", &cntl->usb, eptype);
+    dprintf(1, "uhci_alloc_async_pipe %p %d\n", &cntl->usb, eptype);
 
     struct usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
     if (usbpipe) {
@@ -457,7 +457,7 @@ uhci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
     if (! CONFIG_USB_UHCI)
         return -1;
     struct uhci_pipe *pipe = container_of(p, struct uhci_pipe, pipe);
-    dprintf(7, "uhci_send_pipe qh=%p dir=%d data=%p size=%d\n"
+    dprintf(1, "uhci_send_pipe qh=%p dir=%d data=%p size=%d\n"
             , &pipe->qh, dir, data, datasize);
     int maxpacket = GET_LOWFLAT(pipe->pipe.maxpacket);
     int lowspeed = GET_LOWFLAT(pipe->pipe.speed);

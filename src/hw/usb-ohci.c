@@ -520,9 +520,20 @@ ohci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
     pipe->ed.hwHeadP = (u32)tds | (pipe->ed.hwHeadP & ED_C);
     pipe->ed.hwTailP = (u32)td;
     barrier();
+    // dprintf(1, "O4a cmd %08x\n", pipe->regs->cmdstatus);
     pipe->ed.hwINFO &= ~ED_SKIP;
+    // dprintf(1, "O4b %p\n", pipe);
+//    dprintf(1, "O4c %p\n", pipe->regs);
+    // dprintf(1, "O4d %p %08x\n", &pipe->regs->cmdstatus, statuscmd);
+
+    // dprintf(1, "O4e chd %08x\n", pipe->regs->ed_controlhead);
+    // dprintf(1, "O4f cc %08x\n", pipe->regs->ed_controlcurrent);
+    // dprintf(1, "O4g bhd %08x\n", pipe->regs->ed_bulkhead);
+    // dprintf(1, "O4h bc %08x\n", pipe->regs->ed_bulkcurrent);
+
     writel(&pipe->regs->cmdstatus, statuscmd);
 
+    // dprintf(1, "O5\n");
     int ret = wait_ed(&pipe->ed, usb_xfer_time(p, datasize));
     pipe->ed.hwINFO |= ED_SKIP;
     if (ret)

@@ -187,7 +187,7 @@ ehci_waittick(struct usb_ehci_s *cntl)
 static void
 ehci_free_pipes(struct usb_ehci_s *cntl)
 {
-    dprintf(7, "ehci_free_pipes %p\n", cntl);
+    dprintf(1, "ehci_free_pipes %p\n", cntl);
 
     struct ehci_qh *start = cntl->async_qh;
     struct ehci_qh *pos = start;
@@ -389,7 +389,7 @@ ehci_alloc_intr_pipe(struct usbdevice_s *usbdev
     struct usb_ehci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_ehci_s, usb);
     int frameexp = usb_get_period(usbdev, epdesc);
-    dprintf(7, "ehci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
+    dprintf(1, "ehci_alloc_intr_pipe %p %d\n", &cntl->usb, frameexp);
 
     if (frameexp > 10)
         frameexp = 10;
@@ -460,7 +460,7 @@ ehci_realloc_pipe(struct usbdevice_s *usbdev, struct usb_pipe *upipe
         return ehci_alloc_intr_pipe(usbdev, epdesc);
     struct usb_ehci_s *cntl = container_of(
         usbdev->hub->cntl, struct usb_ehci_s, usb);
-    dprintf(7, "ehci_alloc_async_pipe %p %d\n", &cntl->usb, eptype);
+    dprintf(1, "ehci_alloc_async_pipe %p %d\n", &cntl->usb, eptype);
 
     struct usb_pipe *usbpipe = usb_get_freelist(&cntl->usb, eptype);
     if (usbpipe) {
@@ -550,7 +550,7 @@ ehci_send_pipe(struct usb_pipe *p, int dir, const void *cmd
     if (! CONFIG_USB_EHCI)
         return -1;
     struct ehci_pipe *pipe = container_of(p, struct ehci_pipe, pipe);
-    dprintf(7, "ehci_send_pipe qh=%p dir=%d data=%p size=%d\n"
+    dprintf(1, "ehci_send_pipe qh=%p dir=%d data=%p size=%d\n"
             , &pipe->qh, dir, data, datasize);
 
     // Allocate tds on stack (with required alignment)
