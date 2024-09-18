@@ -61,7 +61,7 @@ CPPFLAGS = -P -MD -MT $@
 COMMONCFLAGS := -I$(OUT) -Isrc -Os -MD -g \
     -Wall -Wno-strict-aliasing -Wold-style-definition \
     $(call cc-option,$(CC),-Wtype-limits,) \
-    -m32 -march=i386 -mregparm=3 -mpreferred-stack-boundary=2 \
+    -m32 -march=i486 -mtune=i486 -mregparm=3 -mpreferred-stack-boundary=2 \
     -minline-all-stringops -fomit-frame-pointer \
     -freg-struct-return -ffreestanding -fno-delete-null-pointer-checks \
     -ffunction-sections -fdata-sections -fno-common -fno-merge-constants
@@ -71,6 +71,7 @@ COMMONCFLAGS += $(call cc-option,$(CC),-fno-stack-protector,)
 COMMONCFLAGS += $(call cc-option,$(CC),-fno-stack-protector-all,)
 COMMONCFLAGS += $(call cc-option,$(CC),-fstack-check=no,)
 COMMONCFLAGS += $(call cc-option,$(CC),-Wno-address-of-packed-member,)
+COMMONCFLAGS += $(call cc-option,$(CC),-Wno-array-bounds,)
 COMMONCFLAGS += $(call cc-option,$(CC),-fcf-protection=none,)
 COMMA := ,
 
