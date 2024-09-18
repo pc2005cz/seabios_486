@@ -227,9 +227,11 @@ pci_probe_host(void)
 void
 pci_reboot(void)
 {
+#if 0   //pc2005 not supported
     u8 v = inb(PORT_PCI_REBOOT) & ~6;
     outb(v|2, PORT_PCI_REBOOT); /* Request hard reset */
     udelay(50);
     outb(v|6, PORT_PCI_REBOOT); /* Actually do the reset */
     udelay(50);
+#endif
 }
