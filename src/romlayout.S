@@ -592,6 +592,13 @@ entry_18:
 
         ORG 0xe05b
 entry_post:
+#if 0
+//pc2005
+	movb $'*',%al
+	mov $0x3f8, %dx
+	outb %al,%dx
+#endif
+
         cmpl $0, %cs:HaveRunPost                // Check for resume/reboot
         jnz entry_resume
         ENTRY_INTO32 _cfunc32flat_handle_post   // Normal entry point
