@@ -280,4 +280,11 @@ pit_setup(void)
     // maximum count of 0000H = 18.2Hz
     outb(0x0, PORT_PIT_COUNTER0);
     outb(0x0, PORT_PIT_COUNTER0);
+
+    //TODO required by keyb.com
+    // timer1: binary count, 16bit count, mode 2
+    outb(PM_SEL_TIMER1|PM_ACCESS_WORD|PM_MODE2|PM_CNT_BINARY, PORT_PIT_MODE);
+    // maximum count of 0012H = 66.3Hz
+    outb(0x12, PORT_PIT_COUNTER1);
+    outb(0x0, PORT_PIT_COUNTER1);
 }
