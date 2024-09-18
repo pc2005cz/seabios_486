@@ -126,19 +126,22 @@ tryReboot(void)
     dprintf(1, "Attempting a hard reboot\n");
 
     // Use a QEMU specific reboot on QEMU
-    qemu_reboot();
+    // qemu_reboot();
 
     // Reboot using ACPI RESET_REG
-    acpi_reboot();
+    // acpi_reboot();
 
     // Try keyboard controller reboot.
-    i8042_reboot();
+    // i8042_reboot();
 
     // Try PCI 0xcf9 reboot
-    pci_reboot();
+    // pci_reboot();	//not on 486
+
+    // PORT 92h reset
+    outb(inb(0x92) | 1, 0x92);
 
     // Try triple fault
-    asm volatile("int3");
+    // asm volatile("int3");
 
     panic("Could not reboot");
 }
