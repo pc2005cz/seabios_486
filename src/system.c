@@ -71,6 +71,9 @@ handle_1552(struct bregs *regs)
 static void
 handle_1587(struct bregs *regs)
 {
+dprintf(3, "!!! handle_1587\n");
+
+
     // +++ should probably have descriptor checks
     // +++ should have exception handlers
 
@@ -171,6 +174,9 @@ handle_1588(struct bregs *regs)
 {
     u32 rs = GET_GLOBAL(LegacyRamSize);
 
+dprintf(3, "XMS size %u\n", rs);
+
+
     // According to Ralf Brown's interrupt the limit should be 15M,
     // but real machines mostly return max. 63M.
     if (rs > 64*1024*1024)
@@ -267,6 +273,8 @@ handle_15e801(struct bregs *regs)
     // regs.u.r16.bx = 0;
 
     u32 rs = GET_GLOBAL(LegacyRamSize);
+
+dprintf(3, "XMS E801 size %u\n", rs);
 
     // Get the amount of extended memory (above 1M)
     if (rs > 16*1024*1024) {
