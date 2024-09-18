@@ -154,6 +154,20 @@ cdrom_boot(struct drive_s *drive)
     if (ret)
         return 3;
 
+
+#if 0
+/////////
+for (unsigned xxx=0;xxx<2048;xxx++) {
+	__dprintf("%02x ", buffer[xxx]);
+	if ((xxx%16)==15) {
+		__dprintf("\n");
+	}
+}
+__dprintf("\n");
+/////////
+#endif
+
+
     // Validity checks
     if (buffer[0])
         return 4;
